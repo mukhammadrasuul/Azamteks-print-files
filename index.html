@@ -63,46 +63,25 @@
         /* Adjusted Column Widths */
         .col-id { width: 30px; text-align: center; }
         .col-name { width: auto; text-align: left; }
-        .col-meas { width: 60px; text-align: center; } /* Adjusted for шт/рулон */
-        .col-pkg  { width: 60px; text-align: center; } /* Adjusted for Рулон/Мешок */
+        .col-meas { width: 60px; text-align: center; } 
+        .col-pkg  { width: 60px; text-align: center; } 
         .col-inner{ width: 50px; text-align: center; }
         .col-total{ width: 65px; text-align: center; font-weight: bold; }
         .col-desc { width: 60px; }
 
-        /* SUMMARY TABLE STYLES */
-        .summary-container {
-            display: flex;
-            justify-content: flex-end; 
-            margin-bottom: 40px;
-        }
-
-        table.summary-table {
-            width: auto; 
-            min-width: 200px;
-            border-collapse: collapse;
-            font-size: 12px;
-        }
-
-        table.summary-table th {
-            background-color: #f0f0f0;
-            border: 1px solid black;
-            padding: 5px 10px;
-            text-align: center;
-        }
-
-        table.summary-table td {
-            border: 1px solid black;
-            padding: 5px 10px;
-            text-align: center;
-        }
-        
-        table.summary-table td:last-child {
+        /* Total Row Style */
+        .row-total td {
+            background-color: #f9f9f9;
             font-weight: bold;
+        }
+        .total-label {
+            text-align: right !important;
+            padding-right: 10px !important;
         }
 
         /* FOOTER */
         .footer {
-            margin-top: 20px;
+            margin-top: 40px;
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
@@ -112,9 +91,25 @@
         .signature-block { text-align: center; width: 200px; }
         .signature-line { border-bottom: 1px solid black; margin-top: 30px; margin-bottom: 5px; }
 
+        /* PRINT STYLES */
         @media print {
-            body { background-color: white; margin: 0; }
-            .page { box-shadow: none; margin: 0; width: 100%; height: auto; }
+            body { 
+                background-color: white; 
+                margin: 0; 
+                display: block; /* Fixes centering issues in print */
+            }
+            .page { 
+                box-shadow: none; 
+                margin: 0; 
+                width: 100%; 
+                min-height: 0; /* REMOVES EMPTY SECOND PAGE */
+                height: auto;
+                padding: 10mm 10mm; /* Safe padding for printers */
+                border: none;
+            }
+            .footer {
+                page-break-inside: avoid; /* Keeps signatures together */
+            }
         }
     </style>
 </head>
@@ -123,7 +118,7 @@
     <div class="page">
         <div class="header">
             <div class="company-info">
-                <div>Корхона номи: &nbsp;&nbsp;&nbsp;&nbsp; <strong>АзамТекс</strong></div>
+                <div>Korxona nomi: &nbsp;&nbsp;&nbsp;&nbsp; <strong>АзамТекс</strong></div>
                 <div class="date-info">Сана: <span id="sana"></span></div>
             </div>
             <div class="invoice-title">
@@ -151,19 +146,6 @@
             <tbody id="table-body">
                 </tbody>
         </table>
-
-        <div class="summary-container" id="summary-container" style="display: none;">
-            <table class="summary-table">
-                <thead>
-                    <tr>
-                        <th>Ўлчов тури</th>
-                        <th>Жами миқдор</th>
-                    </tr>
-                </thead>
-                <tbody id="summary-body">
-                    </tbody>
-            </table>
-        </div>
 
         <div class="footer">
             <div class="signature-block">
@@ -215,7 +197,11 @@
 
             const rowCount = product_names.length;
             const tableBody = document.getElementById('table-body');
-            const summaryTotals = {};
+            
+            // Initialize Sum Variables
+            let sumPkg = 0;
+            let sumInner = 0;
+            let sumTotal = 0;
 
             // 3. Logic & Loop
             for (let i = 0; i < rowCount; i++) {
@@ -231,10 +217,16 @@
                 if (innerQty > 0) {
                     total = pkgCount * innerQty;
                     innerDisplay = innerQty;
+                    // Add to Inner Sum
+                    sumInner += innerQty;
                 } else {
                     total = pkgCount;
                     innerDisplay = '-';
                 }
+
+                // Add to other sums
+                sumPkg += pkgCount;
+                sumTotal += total;
 
                 // Add Row to Table
                 const tr = document.createElement('tr');
@@ -248,30 +240,24 @@
                     <td class="col-desc"></td>
                 `;
                 tableBody.appendChild(tr);
-
-                // Summary Logic
-                const key = meas.toLowerCase();
-                if (!summaryTotals[key]) {
-                    summaryTotals[key] = { label: meas, total: 0 };
-                }
-                summaryTotals[key].total += total;
             }
 
-            // 4. Render Summary
-            const summaryBody = document.getElementById('summary-body');
-            const summaryKeys = Object.keys(summaryTotals);
-            
-            if (summaryKeys.length > 0) {
-                document.getElementById('summary-container').style.display = 'flex';
-                summaryKeys.forEach(key => {
-                    const data = summaryTotals[key];
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td style="text-align: left;">${data.label}</td>
-                        <td>${data.total}</td>
-                    `;
-                    summaryBody.appendChild(tr);
-                });
+            // 4. Append Total Row (Replaces the old Summary Table)
+            if (rowCount > 0) {
+                const totalTr = document.createElement('tr');
+                totalTr.className = 'row-total';
+                
+                // If sumInner is 0, just show a dash or empty
+                const sumInnerDisplay = sumInner > 0 ? sumInner : '-';
+
+                totalTr.innerHTML = `
+                    <td colspan="3" class="total-label">Жами:</td>
+                    <td class="col-pkg">${sumPkg}</td>
+                    <td class="col-inner">${sumInnerDisplay}</td>
+                    <td class="col-total">${sumTotal}</td>
+                    <td class="col-desc"></td>
+                `;
+                tableBody.appendChild(totalTr);
             }
 
             // Auto Print
