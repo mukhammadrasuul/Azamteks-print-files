@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yuk Xati</title>
+    <title>Юк хати</title>
     <style>
         body {
             font-family: "Times New Roman", Times, serif;
@@ -63,11 +63,11 @@
         /* Adjusted Column Widths */
         .col-id { width: 30px; text-align: center; }
         .col-name { width: auto; text-align: left; }
-        .col-meas { width: 50px; text-align: center; }
-        .col-pkg  { width: 50px; text-align: center; }
+        .col-meas { width: 60px; text-align: center; } /* Adjusted for шт/рулон */
+        .col-pkg  { width: 60px; text-align: center; } /* Adjusted for Рулон/Мешок */
         .col-inner{ width: 50px; text-align: center; }
-        .col-total{ width: 60px; text-align: center; font-weight: bold; }
-        .col-desc { width: 70px; }
+        .col-total{ width: 65px; text-align: center; font-weight: bold; }
+        .col-desc { width: 60px; }
 
         /* SUMMARY TABLE STYLES */
         .summary-container {
@@ -123,29 +123,29 @@
     <div class="page">
         <div class="header">
             <div class="company-info">
-                <div>Korxona nomi: &nbsp;&nbsp;&nbsp;&nbsp; <strong>AzamTeks</strong></div>
-                <div class="date-info">Sana: <span id="sana"></span></div>
+                <div>Корхона номи: &nbsp;&nbsp;&nbsp;&nbsp; <strong>АзамТекс</strong></div>
+                <div class="date-info">Сана: <span id="sana"></span></div>
             </div>
             <div class="invoice-title">
-                Yuk xati № <span id="yuk_hati"></span>
+                Юк хати № <span id="yuk_hati"></span>
             </div>
         </div>
 
         <div class="meta-data">
-            <div class="meta-row"><span>Qayerdan:</span> <span id="qayerdan"></span></div>
-            <div class="meta-row"><span>Qayerga:</span> <span id="qayerga"></span></div>
+            <div class="meta-row"><span>Қаердан:</span> <span id="qayerdan"></span></div>
+            <div class="meta-row"><span>Қаерга:</span> <span id="qayerga"></span></div>
         </div>
 
         <table class="main-table">
             <thead>
                 <tr>
                     <th class="col-id">T/P</th>
-                    <th class="col-name">Mahsulot nomi</th>
-                    <th class="col-meas">O'lchov</th>
-                    <th class="col-pkg">O'ram soni</th>
-                    <th class="col-inner">O'ram ichida</th>
-                    <th class="col-total">Jami</th>
-                    <th class="col-desc">Izoh</th>
+                    <th class="col-name">Маҳсулот номи</th>
+                    <th class="col-meas">шт/рулон</th>
+                    <th class="col-pkg">Рулон/Мешок</th>
+                    <th class="col-inner">шт/метр</th>
+                    <th class="col-total">Жами (шт/метр)</th>
+                    <th class="col-desc">Изоҳ</th>
                 </tr>
             </thead>
             <tbody id="table-body">
@@ -156,8 +156,8 @@
             <table class="summary-table">
                 <thead>
                     <tr>
-                        <th>O'lchov turi</th>
-                        <th>Jami miqdor</th>
+                        <th>Ўлчов тури</th>
+                        <th>Жами миқдор</th>
                     </tr>
                 </thead>
                 <tbody id="summary-body">
@@ -167,15 +167,15 @@
 
         <div class="footer">
             <div class="signature-block">
-                <div>Mas'ul xodim</div>
+                <div>Масъул ходим</div>
                 <div class="signature-line"></div>
-                <div>(Imzo)</div>
+                <div>(Имзо)</div>
             </div>
 
             <div class="signature-block">
-                <div>Qabul qildi</div>
+                <div>Қабул қилди</div>
                 <div class="signature-line"></div>
-                <div>(Imzo)</div>
+                <div>(Имзо)</div>
             </div>
         </div>
     </div>
@@ -189,7 +189,6 @@
             function getList(key) {
                 const val = params.get(key);
                 if (!val) return [];
-                // Decode URI components just in case, then split
                 return decodeURIComponent(val).split(',').map(s => s.trim());
             }
             
@@ -234,6 +233,7 @@
                     innerDisplay = innerQty;
                 } else {
                     total = pkgCount;
+                    innerDisplay = '-';
                 }
 
                 // Add Row to Table
@@ -274,7 +274,7 @@
                 });
             }
 
-            // Auto Print (Optional - you can remove this if testing)
+            // Auto Print
             setTimeout(() => window.print(), 500); 
         };
     </script>
