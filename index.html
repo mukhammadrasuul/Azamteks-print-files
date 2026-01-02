@@ -165,17 +165,49 @@
 
     <script>
         window.onload = function() {
+            // --- Helper Functions ---
+
+            // 1. Format Numbers (e.g., 60000 -> 60 000)
+            function formatNumber(num) {
+                if (num === '-' || num === '' || num === null || num === undefined) return num;
+                // Convert to number and format with space separator
+                return Number(num).toLocaleString('ru-RU').replace(/\u00A0/g, ' ');
+            }
+
+            // 2. Format Phone Numbers
+            function formatPhone(phone) {
+                if (!phone) return '';
+                // Remove existing spaces or special chars (keep +)
+                const clean = phone.replace(/[^\d+]/g, '');
+
+                // Pattern: +998 XX XXX XX XX
+                if (clean.startsWith('+998') && clean.length === 13) {
+                    return clean.replace(/(\+998)(\d{2})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5');
+                }
+                // Pattern: 998 XX XXX XX XX (without plus)
+                if (clean.startsWith('998') && clean.length === 12) {
+                    return clean.replace(/(998)(\d{2})(\d{3})(\d{2})(\d{2})/, '+$1 $2 $3 $4 $5');
+                }
+                // Pattern: XX XXX XX XX (9 digits local)
+                if (clean.length === 9) {
+                    return clean.replace(/(\d{2})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4');
+                }
+                
+                // Return original if no pattern matches
+                return phone;
+            }
+
+            // --- Main Logic ---
+
             // 1. Capture Data from URL
             const params = new URLSearchParams(window.location.search);
             
-            // Helper to get lists
             function getList(key) {
                 const val = params.get(key);
                 if (!val) return [];
                 return decodeURIComponent(val).split(',').map(s => s.trim());
             }
             
-            // Helper to get text
             function getText(key) {
                 const val = params.get(key);
                 return val ? decodeURIComponent(val) : '';
@@ -189,7 +221,9 @@
             document.getElementById('yuk_hati').textContent = getText('yuk_hati') || '---';
             document.getElementById('qayerdan').textContent = getText('qayerdan') || '';
             document.getElementById('qayerga').textContent = getText('qayerga') || '';
-            document.getElementById('telefon').textContent = getText('telefon') || '';
+            
+            // Apply Phone Formatting here
+            document.getElementById('telefon').textContent = formatPhone(getText('telefon')) || '';
 
             // 2. Capture Lists
             const product_names = getList('mahsulot');
@@ -219,51 +253,49 @@
                 if (innerQty > 0) {
                     total = pkgCount * innerQty;
                     innerDisplay = innerQty;
-                    // Add to Inner Sum
                     sumInner += innerQty;
                 } else {
                     total = pkgCount;
                     innerDisplay = '-';
                 }
 
-                // Add to other sums
                 sumPkg += pkgCount;
                 sumTotal += total;
 
-                // Add Row to Table
+                // Add Row to Table (With Number Formatting)
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="col-id">${i + 1}</td>
                     <td class="col-name">${name}</td>
                     <td class="col-meas">${meas}</td>
-                    <td class="col-pkg">${pkgCount}</td>
-                    <td class="col-inner">${innerDisplay}</td>
-                    <td class="col-total">${total}</td>
+                    <td class="col-pkg">${formatNumber(pkgCount)}</td>
+                    <td class="col-inner">${formatNumber(innerDisplay)}</td>
+                    <td class="col-total">${formatNumber(total)}</td>
                     <td class="col-desc"></td>
                 `;
                 tableBody.appendChild(tr);
             }
 
-            // 4. Append Total Row (Replaces the old Summary Table)
+            // 4. Append Total Row
             if (rowCount > 0) {
                 const totalTr = document.createElement('tr');
                 totalTr.className = 'row-total';
                 
-                // If sumInner is 0, just show a dash or empty
                 const sumInnerDisplay = sumInner > 0 ? sumInner : '-';
 
+                // Apply Number Formatting to Totals
                 totalTr.innerHTML = `
                     <td colspan="3" class="total-label">Жами:</td>
-                    <td class="col-pkg">${sumPkg}</td>
-                    <td class="col-inner">${sumInnerDisplay}</td>
-                    <td class="col-total">${sumTotal}</td>
+                    <td class="col-pkg">${formatNumber(sumPkg)}</td>
+                    <td class="col-inner">${formatNumber(sumInnerDisplay)}</td>
+                    <td class="col-total">${formatNumber(sumTotal)}</td>
                     <td class="col-desc"></td>
                 `;
                 tableBody.appendChild(totalTr);
             }
 
             // Auto Print
-            setTimeout(() => window.print(), 100); 
+            setTimeout(() => window.print(), 500); 
         };
     </script>
 </body>
