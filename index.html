@@ -129,6 +129,7 @@
         <div class="meta-data">
             <div class="meta-row"><span>Қаердан:</span> <span id="qayerdan"></span></div>
             <div class="meta-row"><span>Қаерга:</span> <span id="qayerga"></span></div>
+            <div class="meta-row"><span>Мижоз телефон рақами:</span> <span id="telefon"></span></div>
         </div>
 
         <table class="main-table">
@@ -188,6 +189,7 @@
             document.getElementById('yuk_hati').textContent = getText('yuk_hati') || '---';
             document.getElementById('qayerdan').textContent = getText('qayerdan') || '';
             document.getElementById('qayerga').textContent = getText('qayerga') || '';
+            document.getElementById('telefon').textContent = getText('telefon') || '';
 
             // 2. Capture Lists
             const product_names = getList('mahsulot');
@@ -261,7 +263,7 @@
             }
 
             // Auto Print
-            setTimeout(() => window.print(), 500); 
+            setTimeout(() => window.print(), 100); 
         };
     </script>
 </body>
