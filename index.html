@@ -35,8 +35,25 @@
         .date-info { margin-top: 10px; font-size: 14px; }
         .invoice-title { text-align: right; font-size: 18px; font-weight: bold; }
 
+        /* --- UPDATED META DATA STYLES --- */
         .meta-data { margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
-        .meta-row span { font-weight: bold; display: inline-block; width: 240px; }
+        
+        .meta-row {
+            display: flex;          /* Use Flexbox to align items */
+            align-items: flex-start; 
+        }
+
+        .meta-label { 
+            font-weight: bold; 
+            width: 120px;          /* Fixed width for the label */
+            min-width: 120px;      /* Prevents label from squishing */
+        }
+
+        .meta-value {
+            font-weight: bold;
+            flex: 1;               /* Allows the name to take remaining space */
+        }
+        /* -------------------------------- */
 
         /* MAIN TABLE STYLES */
         table.main-table {
@@ -96,19 +113,19 @@
             body { 
                 background-color: white; 
                 margin: 0; 
-                display: block; /* Fixes centering issues in print */
+                display: block; 
             }
             .page { 
                 box-shadow: none; 
                 margin: 0; 
                 width: 100%; 
-                min-height: 0; /* REMOVES EMPTY SECOND PAGE */
+                min-height: 0; 
                 height: auto;
-                padding: 10mm 10mm; /* Safe padding for printers */
+                padding: 10mm 10mm; 
                 border: none;
             }
             .footer {
-                page-break-inside: avoid; /* Keeps signatures together */
+                page-break-inside: avoid; 
             }
         }
     </style>
@@ -127,9 +144,18 @@
         </div>
 
         <div class="meta-data">
-            <div class="meta-row"><span>Қаердан:</span> <span id="qayerdan"></span></div>
-            <div class="meta-row"><span>Қаерга:</span> <span id="qayerga"></span></div>
-            <div class="meta-row"><span>Мижоз рақами:</span> <span id="telefon"></span></div>
+            <div class="meta-row">
+                <span class="meta-label">Қаердан:</span> 
+                <span class="meta-value" id="qayerdan"></span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">Қаерга:</span> 
+                <span class="meta-value" id="qayerga"></span>
+            </div>
+            <div class="meta-row">
+                <span class="meta-label">Мижоз рақами:</span> 
+                <span class="meta-value" id="telefon"></span>
+            </div>
         </div>
 
         <table class="main-table">
@@ -170,36 +196,27 @@
             // 1. Format Numbers (e.g., 60000 -> 60 000)
             function formatNumber(num) {
                 if (num === '-' || num === '' || num === null || num === undefined) return num;
-                // Convert to number and format with space separator
                 return Number(num).toLocaleString('ru-RU').replace(/\u00A0/g, ' ');
             }
 
             // 2. Format Phone Numbers
             function formatPhone(phone) {
                 if (!phone) return '';
-                // Remove existing spaces or special chars (keep +)
                 const clean = phone.replace(/[^\d+]/g, '');
 
-                // Pattern: +998 XX XXX XX XX
                 if (clean.startsWith('+998') && clean.length === 13) {
                     return clean.replace(/(\+998)(\d{2})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5');
                 }
-                // Pattern: 998 XX XXX XX XX (without plus)
                 if (clean.startsWith('998') && clean.length === 12) {
                     return clean.replace(/(998)(\d{2})(\d{3})(\d{2})(\d{2})/, '+$1 $2 $3 $4 $5');
                 }
-                // Pattern: XX XXX XX XX (9 digits local)
                 if (clean.length === 9) {
                     return clean.replace(/(\d{2})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4');
                 }
-                
-                // Return original if no pattern matches
                 return phone;
             }
 
             // --- Main Logic ---
-
-            // 1. Capture Data from URL
             const params = new URLSearchParams(window.location.search);
             
             function getList(key) {
@@ -222,10 +239,9 @@
             document.getElementById('qayerdan').textContent = getText('qayerdan') || '';
             document.getElementById('qayerga').textContent = getText('qayerga') || '';
             
-            // Apply Phone Formatting here
             document.getElementById('telefon').textContent = formatPhone(getText('telefon')) || '';
 
-            // 2. Capture Lists
+            // Capture Lists
             const product_names = getList('mahsulot');
             const measurements  = getList('olchov');
             const packages      = getList('soni');
@@ -234,12 +250,11 @@
             const rowCount = product_names.length;
             const tableBody = document.getElementById('table-body');
             
-            // Initialize Sum Variables
             let sumPkg = 0;
             let sumInner = 0;
             let sumTotal = 0;
 
-            // 3. Logic & Loop
+            // Loop
             for (let i = 0; i < rowCount; i++) {
                 const name = product_names[i] || '';
                 const meas = measurements[i] || '';
@@ -249,7 +264,6 @@
                 let total = 0;
                 let innerDisplay = '-';
 
-                // Calculation logic
                 if (innerQty > 0) {
                     total = pkgCount * innerQty;
                     innerDisplay = innerQty;
@@ -262,7 +276,6 @@
                 sumPkg += pkgCount;
                 sumTotal += total;
 
-                // Add Row to Table (With Number Formatting)
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="col-id">${i + 1}</td>
@@ -276,14 +289,13 @@
                 tableBody.appendChild(tr);
             }
 
-            // 4. Append Total Row
+            // Append Total Row
             if (rowCount > 0) {
                 const totalTr = document.createElement('tr');
                 totalTr.className = 'row-total';
                 
                 const sumInnerDisplay = sumInner > 0 ? sumInner : '-';
 
-                // Apply Number Formatting to Totals
                 totalTr.innerHTML = `
                     <td colspan="3" class="total-label">Жами:</td>
                     <td class="col-pkg">${formatNumber(sumPkg)}</td>
@@ -294,7 +306,6 @@
                 tableBody.appendChild(totalTr);
             }
 
-            // Auto Print
             setTimeout(() => window.print(), 500); 
         };
     </script>
