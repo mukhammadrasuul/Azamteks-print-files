@@ -35,25 +35,24 @@
         .date-info { margin-top: 10px; font-size: 14px; }
         .invoice-title { text-align: right; font-size: 18px; font-weight: bold; }
 
-        /* --- UPDATED META DATA STYLES --- */
+        /* --- META DATA STYLES --- */
         .meta-data { margin-bottom: 20px; font-size: 14px; line-height: 1.6; }
         
         .meta-row {
-            display: flex;          /* Use Flexbox to align items */
+            display: flex;          
             align-items: flex-start; 
         }
 
         .meta-label { 
             font-weight: bold; 
-            width: 120px;          /* Fixed width for the label */
-            min-width: 120px;      /* Prevents label from squishing */
+            width: 120px;          
+            min-width: 120px;      
         }
 
         .meta-value {
             font-weight: bold;
-            flex: 1;               /* Allows the name to take remaining space */
+            flex: 1;               
         }
-        /* -------------------------------- */
 
         /* MAIN TABLE STYLES */
         table.main-table {
@@ -193,13 +192,11 @@
         window.onload = function() {
             // --- Helper Functions ---
 
-            // 1. Format Numbers (e.g., 60000 -> 60 000)
             function formatNumber(num) {
                 if (num === '-' || num === '' || num === null || num === undefined) return num;
                 return Number(num).toLocaleString('ru-RU').replace(/\u00A0/g, ' ');
             }
 
-            // 2. Format Phone Numbers
             function formatPhone(phone) {
                 if (!phone) return '';
                 const clean = phone.replace(/[^\d+]/g, '');
@@ -219,15 +216,17 @@
             // --- Main Logic ---
             const params = new URLSearchParams(window.location.search);
             
-            function getList(key) {
-                const val = params.get(key);
-                if (!val) return [];
-                return decodeURIComponent(val).split(',').map(s => s.trim());
-            }
-            
             function getText(key) {
                 const val = params.get(key);
                 return val ? decodeURIComponent(val) : '';
+            }
+            
+            // NEW: Get List split by PIPE (|) instead of COMMA (,)
+            function getList(key) {
+                const val = params.get(key);
+                if (!val) return [];
+                // Split by | character
+                return decodeURIComponent(val).split('|').map(s => s.trim());
             }
 
             // Fill Static Data
@@ -238,25 +237,28 @@
             document.getElementById('yuk_hati').textContent = getText('yuk_hati') || '---';
             document.getElementById('qayerdan').textContent = getText('qayerdan') || '';
             document.getElementById('qayerga').textContent = getText('qayerga') || '';
-            
             document.getElementById('telefon').textContent = formatPhone(getText('telefon')) || '';
 
-            // Capture Lists
+            // --- Capture Lists ---
+            // Now straightforward because we trust the | separator
             const product_names = getList('mahsulot');
             const measurements  = getList('olchov');
             const packages      = getList('soni');
             const inner_qtys    = getList('ichida');
 
-            const rowCount = product_names.length;
+            // Use the product name count as the source of truth, 
+            // but ensure we don't crash if other lists are shorter
+            const rowCount = product_names.length; 
+
+            // --- Render Table ---
             const tableBody = document.getElementById('table-body');
             
             let sumPkg = 0;
             let sumInner = 0;
             let sumTotal = 0;
 
-            // Loop
             for (let i = 0; i < rowCount; i++) {
-                const name = product_names[i] || '';
+                const name = product_names[i] || ''; 
                 const meas = measurements[i] || '';
                 const pkgCount = parseFloat(packages[i]) || 0;
                 const innerQty = parseFloat(inner_qtys[i]) || 0;
@@ -293,7 +295,6 @@
             if (rowCount > 0) {
                 const totalTr = document.createElement('tr');
                 totalTr.className = 'row-total';
-                
                 const sumInnerDisplay = sumInner > 0 ? sumInner : '-';
 
                 totalTr.innerHTML = `
