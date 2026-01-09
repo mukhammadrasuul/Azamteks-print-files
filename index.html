@@ -200,7 +200,7 @@
             function formatPhone(phone) {
                 if (!phone) return '';
                 const clean = phone.replace(/[^\d+]/g, '');
-
+                // Standard Uzbekistan format
                 if (clean.startsWith('+998') && clean.length === 13) {
                     return clean.replace(/(\+998)(\d{2})(\d{3})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5');
                 }
@@ -221,7 +221,7 @@
                 return val ? decodeURIComponent(val) : '';
             }
             
-            // NEW: Get List split by PIPE (|) instead of COMMA (,)
+            // Get List split by PIPE (|)
             function getList(key) {
                 const val = params.get(key);
                 if (!val) return [];
@@ -240,21 +240,18 @@
             document.getElementById('telefon').textContent = formatPhone(getText('telefon')) || '';
 
             // --- Capture Lists ---
-            // Now straightforward because we trust the | separator
             const product_names = getList('mahsulot');
             const measurements  = getList('olchov');
             const packages      = getList('soni');
             const inner_qtys    = getList('ichida');
 
-            // Use the product name count as the source of truth, 
-            // but ensure we don't crash if other lists are shorter
             const rowCount = product_names.length; 
 
             // --- Render Table ---
             const tableBody = document.getElementById('table-body');
             
             let sumPkg = 0;
-            let sumInner = 0;
+            // Removed sumInner variable as requested
             let sumTotal = 0;
 
             for (let i = 0; i < rowCount; i++) {
@@ -269,7 +266,7 @@
                 if (innerQty > 0) {
                     total = pkgCount * innerQty;
                     innerDisplay = innerQty;
-                    sumInner += innerQty;
+                    // We no longer add to sumInner here
                 } else {
                     total = pkgCount;
                     innerDisplay = '-';
@@ -295,11 +292,12 @@
             if (rowCount > 0) {
                 const totalTr = document.createElement('tr');
                 totalTr.className = 'row-total';
-                const sumInnerDisplay = sumInner > 0 ? sumInner : '-';
-
+                
+                // Note: The inner quantity column is now hardcoded to '-'
                 totalTr.innerHTML = `
                     <td colspan="3" class="total-label">Жами:</td>
-                    <td class="col-inner">${formatNumber(sumInnerDisplay)}</td>
+                    <td class="col-pkg">${formatNumber(sumPkg)}</td>
+                    <td class="col-inner">-</td>
                     <td class="col-total">${formatNumber(sumTotal)}</td>
                     <td class="col-desc"></td>
                 `;
